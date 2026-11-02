@@ -8814,7 +8814,7 @@ export default withEnglishFallback({
     tableFilterEdit: "条件",
     tableFilterClear: "清除条件",
     tableFilterTitle: "设置「{table}」的传输条件",
-    tableFilterHint: "不填则传输整表；可填 WHERE 条件，或一条完整 SELECT。仅 MySQL / PostgreSQL 系列源库支持。",
+    tableFilterHint: "不填则传输整表；可填 WHERE 条件，或一条完整 SELECT。仅 MySQL / PostgreSQL 系列及 ClickHouse 源库支持。",
     tableFilterPlaceholder: "例如：id <= 90000   或   select * from t_order where id <= 90000",
     tableFilterExamples: "支持两种写法：WHERE 条件（id <= 90000）或完整 SELECT（select * from t_order where id <= 90000）。完整 SELECT 建议使用 select *，并包含要传输的全部字段。",
     tableFilterSave: "保存",

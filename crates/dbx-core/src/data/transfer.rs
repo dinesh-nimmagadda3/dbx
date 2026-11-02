@@ -359,8 +359,8 @@ pub struct TransferRequest {
     /// Key = source table name; value is either a bare `WHERE` predicate
     /// (`id <= 90000`) or a complete source `SELECT`
     /// (`select * from t_order where id <= 90000`) used as a derived table.
-    /// Missing or empty entries transfer the whole table. Only MySQL- and
-    /// PostgreSQL-family sources are supported (see
+    /// Missing or empty entries transfer the whole table. Only MySQL-family,
+    /// PostgreSQL-family, and ClickHouse sources are supported (see
     /// `transfer_table_filter_supported`).
     #[serde(default)]
     pub table_filters: HashMap<String, String>,
@@ -7465,7 +7465,8 @@ pub enum TransferTableFilter {
 }
 
 /// Source engines that support per-table transfer filters. The paged fallback
-/// only relies on MySQL/PostgreSQL `LIMIT`/`OFFSET` semantics.
+/// only relies on MySQL/PostgreSQL `LIMIT`/`OFFSET` semantics, which ClickHouse
+/// shares; ClickHouse sources already page by OFFSET without a filter.
 pub fn transfer_table_filter_supported(db_type: &DatabaseType) -> bool {
     matches!(
         db_type,
@@ -7476,6 +7477,7 @@ pub fn transfer_table_filter_supported(db_type: &DatabaseType) -> bool {
             | DatabaseType::Gaussdb
             | DatabaseType::OpenGauss
             | DatabaseType::Kwdb
+            | DatabaseType::ClickHouse
     )
 }
 
@@ -7570,7 +7572,7 @@ fn transfer_filter_count_sql(
 
 /// Builds one paged source read for a filtered table.
 ///
-/// MySQL/PostgreSQL share `LIMIT`/`OFFSET`, and the PK `ORDER BY` keeps OFFSET
+/// MySQL/PostgreSQL/ClickHouse share `LIMIT`/`OFFSET`, and the PK `ORDER BY` keeps OFFSET
 /// paging deterministic. Keyset/ctid/COPY paging are disabled while a filter is
 /// present because they build their own `WHERE`/`FROM` and would ignore it.
 #[allow(clippy::too_many_arguments)]
@@ -13047,7 +13049,7 @@ where
     if table_filter.is_some() && should_copy_data(&request.content) && !transfer_table_filter_supported(source_db_type)
     {
         return Err(format!(
-            "Table filters are not supported for source database '{}'; only the MySQL and PostgreSQL families are supported",
+            "Table filters are not supported for source database '{}'; only the MySQL and PostgreSQL families and ClickHouse are supported",
             source_db_type.as_str()
         ));
     }
@@ -25307,6 +25309,55 @@ CREATE INDEX items_name_idx ON public.items (id);"#;
     fn parse_transfer_table_filter_rejects_multiple_statements() {
         assert!(parse_transfer_table_filter("a = 1; b = 2").is_err());
         assert!(parse_transfer_table_filter("SELECT 1; SELECT 2").is_err());
+    }
+
+    #[test]
+    fn clickhouse_filtered_pagination_preserves_filter_and_order() {
+        assert!(transfer_table_filter_supported(&DatabaseType::ClickHouse));
+        let columns = vec!["id".to_string(), "created_at".to_string()];
+        let order_by = vec!["id".to_string()];
+
+        let predicate = TransferTableFilter::Predicate("created_at >= now() - INTERVAL 7 DAY".to_string());
+        assert_eq!(
+            transfer_filter_page_sql(
+                &columns,
+                "events",
+                "dbx",
+                &DatabaseType::ClickHouse,
+                None,
+                &predicate,
+                20,
+                10,
+                &order_by,
+                false
+            ),
+            "SELECT `id`, `created_at` FROM `dbx`.`events` WHERE (created_at >= now() - INTERVAL 7 DAY) ORDER BY `id` LIMIT 10 OFFSET 20"
+        );
+        assert_eq!(
+            transfer_filter_count_sql("events", "dbx", &DatabaseType::ClickHouse, None, &predicate),
+            "SELECT COUNT(*) FROM `dbx`.`events` WHERE (created_at >= now() - INTERVAL 7 DAY)"
+        );
+
+        let query = TransferTableFilter::Query("SELECT * FROM dbx.events WHERE id > 5".to_string());
+        assert_eq!(
+            transfer_filter_page_sql(
+                &columns,
+                "events",
+                "dbx",
+                &DatabaseType::ClickHouse,
+                None,
+                &query,
+                0,
+                10,
+                &order_by,
+                false
+            ),
+            "SELECT `id`, `created_at` FROM (SELECT * FROM dbx.events WHERE id > 5) AS dbx_transfer_src ORDER BY `id` LIMIT 10 OFFSET 0"
+        );
+        assert_eq!(
+            transfer_filter_count_sql("events", "dbx", &DatabaseType::ClickHouse, None, &query),
+            "SELECT COUNT(*) FROM (SELECT * FROM dbx.events WHERE id > 5) AS dbx_transfer_src"
+        );
     }
 
     #[test]

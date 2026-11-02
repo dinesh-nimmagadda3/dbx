@@ -9388,7 +9388,7 @@ export default withEnglishFallback({
     tableFilterEdit: "ตัวกรอง",
     tableFilterClear: "ล้างตัวกรอง",
     tableFilterTitle: "ตัวกรองการถ่ายโอนสำหรับ “{table}”",
-    tableFilterHint: "ว่างจะถ่ายโอนทั้ง Table ป้อน Predicate WHERE หรือ SELECT ทั้งหมด ใช้ได้กับ Source ตระกูล MySQL / PostgreSQL เท่านั้น",
+    tableFilterHint: "ว่างจะถ่ายโอนทั้ง Table ป้อน Predicate WHERE หรือ SELECT ทั้งหมด ใช้ได้กับ Source ตระกูล MySQL / PostgreSQL และ ClickHouse เท่านั้น",
     tableFilterPlaceholder: "เช่น id <= 90000   หรือ   select * from t_order where id <= 90000",
     tableFilterExamples: "รองรับสองรูปแบบ: Predicate WHERE (id <= 90000) หรือ SELECT ทั้งหมด (select * from t_order where id <= 90000) ควรใช้ select * และรวมทุก Column ที่ถ่ายโอน",
     tableFilterSave: "บันทึก",

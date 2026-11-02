@@ -303,7 +303,7 @@ function connectionType(id: string): DatabaseType | undefined {
 // Keep in sync with `transfer_table_filter_supported` in dbx-core.
 const tableFilterSupported = computed(() => {
   const type = connectionType(sourceConnectionId.value);
-  return type === "mysql" || type === "gbase" || type === "postgres" || type === "kingbase" || type === "gaussdb" || type === "opengauss" || type === "kwdb";
+  return type === "mysql" || type === "gbase" || type === "postgres" || type === "kingbase" || type === "gaussdb" || type === "opengauss" || type === "kwdb" || type === "clickhouse";
 });
 
 const activeTableFilterCount = computed(() => selectedTableList.value.filter((table) => (tableFilters.value[table] ?? "").trim().length > 0).length);

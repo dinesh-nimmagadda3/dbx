@@ -7197,7 +7197,7 @@ export default withEnglishFallback({
     tableFilterEdit: "Filtruj",
     tableFilterClear: "Wyczyść filtr",
     tableFilterTitle: "Filtr transferu dla „{table}”",
-    tableFilterHint: "Puste pole transferuje całą tabelę. Wprowadź predykat WHERE lub pełne zapytanie SELECT. Tylko źródła z rodzin MySQL / PostgreSQL.",
+    tableFilterHint: "Puste pole transferuje całą tabelę. Wprowadź predykat WHERE lub pełne zapytanie SELECT. Tylko źródła z rodzin MySQL / PostgreSQL oraz ClickHouse.",
     tableFilterPlaceholder: "np. id <= 90000     lub  select * from t_order where id <= 90000",
     tableFilterExamples: "Obsługiwane są dwie formy: predykat WHERE (id <= 90000) lub pełny SELECT (select * from t_order where id <= 90000). Preferuj select * i uwzględnij każdą transferowaną kolumnę.",
     tableFilterSave: "Zapisz",

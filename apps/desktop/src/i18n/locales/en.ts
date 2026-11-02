@@ -8848,7 +8848,7 @@ export default {
     tableFilterEdit: "Filter",
     tableFilterClear: "Clear filter",
     tableFilterTitle: 'Transfer filter for "{table}"',
-    tableFilterHint: "Empty transfers the whole table. Enter a WHERE predicate or a complete SELECT. MySQL / PostgreSQL-family sources only.",
+    tableFilterHint: "Empty transfers the whole table. Enter a WHERE predicate or a complete SELECT. MySQL / PostgreSQL-family and ClickHouse sources only.",
     tableFilterPlaceholder: "e.g. id <= 90000   or   select * from t_order where id <= 90000",
     tableFilterExamples: "Two forms are supported: a WHERE predicate (id <= 90000) or a complete SELECT (select * from t_order where id <= 90000). Prefer select * and include every transferred column.",
     tableFilterSave: "Save",
